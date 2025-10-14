@@ -16,11 +16,6 @@ Your project is live at:
 
 **[https://vercel.com/jorge-esps-projects/v0-simar-epa-dashboard](https://vercel.com/jorge-esps-projects/v0-simar-epa-dashboard)**
 
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/projects/XL4o1nrJM6J](https://v0.app/chat/projects/XL4o1nrJM6J)**
 
 ## How It Works
 
