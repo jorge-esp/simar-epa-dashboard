@@ -8,10 +8,29 @@ function formatDateForApi(date: Date): string {
   return date.toISOString().replace("T", " ").substring(0, 19)
 }
 
-export async function GET() {
+function getTimeRangeHours(range: string): number {
+  switch (range) {
+    case "12h":
+      return 12
+    case "24h":
+      return 24
+    case "48h":
+      return 48
+    case "7d":
+      return 168 // 7 days * 24 hours
+    default:
+      return 24
+  }
+}
+
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const range = searchParams.get("range") || "24h"
+    const hours = getTimeRangeHours(range)
+
     const now = new Date()
-    const past = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const past = new Date(now.getTime() - hours * 60 * 60 * 1000)
 
     const url = `${API_BASE}/${DEVICE_ID}/Waves/Wave%20Height/${formatDateForApi(past)}/${formatDateForApi(now)}?token=${TOKEN}`
 

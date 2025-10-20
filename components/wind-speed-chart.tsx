@@ -8,19 +8,34 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import useSWR from "swr"
 import { fetchWindSpeed } from "@/lib/api-client"
+import type { TimeRange } from "@/components/time-range-selector"
 
-const fetcher = async () => {
-  const response = await fetchWindSpeed()
+interface WindSpeedChartProps {
+  timeRange: TimeRange
+}
+
+const fetcher = async (timeRange: TimeRange) => {
+  const response = await fetchWindSpeed(timeRange)
+
+  const useDate = timeRange === "48h" || timeRange === "7d"
 
   const chartData = response.data
-    .map((item) => ({
-      time: new Date(item.timestamp).toLocaleTimeString("es-CL", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
-      velocidad: Number(item.value),
-    }))
+    .map((item) => {
+      const date = new Date(item.timestamp)
+      return {
+        time: useDate
+          ? date.toLocaleDateString("es-CL", { day: "numeric", month: "short" })
+          : date.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
+        fullTime: date.toLocaleString("es-CL", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+        velocidad: Number(item.value),
+      }
+    })
     .reverse()
 
   return {
@@ -33,7 +48,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg">
-        <p className="text-sm font-semibold text-gray-900">{payload[0].payload.time}</p>
+        <p className="text-sm font-semibold text-gray-900">{payload[0].payload.fullTime}</p>
         <p className="text-sm text-green-600 font-medium mt-1">Velocidad: {payload[0].value.toFixed(1)} m/s</p>
       </div>
     )
@@ -41,16 +56,19 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null
 }
 
-export function WindSpeedChart() {
+export function WindSpeedChart({ timeRange }: WindSpeedChartProps) {
   const {
     data: response,
     error,
     isLoading,
-  } = useSWR("wind-data", fetcher, {
+  } = useSWR(["wind-data", timeRange], () => fetcher(timeRange), {
     refreshInterval: 60000,
   })
 
   const currentValue = response?.data[response.data.length - 1]?.velocidad
+  const averageValue = response?.data.length
+    ? response.data.reduce((sum, item) => sum + item.velocidad, 0) / response.data.length
+    : undefined
 
   const ChartComponent = ({ data }: { data: any[] }) => (
     <ResponsiveContainer width="100%" height="100%">
@@ -76,11 +94,18 @@ export function WindSpeedChart() {
             <p className="text-xs text-muted-foreground mt-1">actualizado {response?.lastUpdate || "--:--"}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="gap-1 px-3 py-1">
-              <span className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="font-semibold">{currentValue?.toFixed(1) || "--"} m/s</span>
-              <ArrowUpRight className="w-3 h-3" />
-            </Badge>
+            <div className="flex flex-col gap-1">
+              <Badge variant="secondary" className="gap-1 px-3 py-1">
+                <span className="text-xs text-muted-foreground">Actual:</span>
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+                <span className="font-semibold">{currentValue?.toFixed(1) || "--"} m/s</span>
+                <ArrowUpRight className="w-3 h-3" />
+              </Badge>
+              <Badge variant="outline" className="gap-1 px-3 py-1">
+                <span className="text-xs text-muted-foreground">Promedio:</span>
+                <span className="font-semibold">{averageValue?.toFixed(1) || "--"} m/s</span>
+              </Badge>
+            </div>
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="icon" className="rounded-full bg-orange-500 hover:bg-orange-600 text-white">

@@ -8,19 +8,34 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import useSWR from "swr"
 import { fetchAtmosphericPressure } from "@/lib/api-client"
+import type { TimeRange } from "@/components/time-range-selector"
 
-const fetcher = async () => {
-  const response = await fetchAtmosphericPressure()
+interface PressureChartProps {
+  timeRange: TimeRange
+}
+
+const fetcher = async (timeRange: TimeRange) => {
+  const response = await fetchAtmosphericPressure(timeRange)
+
+  const useDate = timeRange === "48h" || timeRange === "7d"
 
   const chartData = response.data
-    .map((item) => ({
-      time: new Date(item.timestamp).toLocaleTimeString("es-CL", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
-      presion: Number(item.value),
-    }))
+    .map((item) => {
+      const date = new Date(item.timestamp)
+      return {
+        time: useDate
+          ? date.toLocaleDateString("es-CL", { day: "numeric", month: "short" })
+          : date.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
+        fullTime: date.toLocaleString("es-CL", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+        presion: Number(item.value),
+      }
+    })
     .reverse()
 
   return {
@@ -33,7 +48,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg">
-        <p className="text-sm font-semibold text-gray-900">{payload[0].payload.time}</p>
+        <p className="text-sm font-semibold text-gray-900">{payload[0].payload.fullTime}</p>
         <p className="text-sm text-purple-600 font-medium mt-1">Presión: {payload[0].value.toFixed(1)} hPa</p>
       </div>
     )
@@ -41,16 +56,19 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null
 }
 
-export function PressureChart() {
+export function PressureChart({ timeRange }: PressureChartProps) {
   const {
     data: response,
     error,
     isLoading,
-  } = useSWR("pressure-data", fetcher, {
+  } = useSWR(["pressure-data", timeRange], () => fetcher(timeRange), {
     refreshInterval: 60000,
   })
 
   const currentValue = response?.data[response.data.length - 1]?.presion
+  const averageValue = response?.data.length
+    ? response.data.reduce((sum, item) => sum + item.presion, 0) / response.data.length
+    : undefined
 
   const ChartComponent = ({ data }: { data: any[] }) => (
     <ResponsiveContainer width="100%" height="100%">
@@ -76,11 +94,18 @@ export function PressureChart() {
             <p className="text-xs text-muted-foreground mt-1">actualizado {response?.lastUpdate || "--:--"}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="gap-1 px-3 py-1">
-              <span className="w-2 h-2 rounded-full bg-purple-500" />
-              <span className="font-semibold">{currentValue?.toFixed(1) || "--"} hPa</span>
-              <ArrowUpRight className="w-3 h-3" />
-            </Badge>
+            <div className="flex flex-col gap-1">
+              <Badge variant="secondary" className="gap-1 px-3 py-1">
+                <span className="text-xs text-muted-foreground">Actual:</span>
+                <span className="w-2 h-2 rounded-full bg-purple-500" />
+                <span className="font-semibold">{currentValue?.toFixed(1) || "--"} hPa</span>
+                <ArrowUpRight className="w-3 h-3" />
+              </Badge>
+              <Badge variant="outline" className="gap-1 px-3 py-1">
+                <span className="text-xs text-muted-foreground">Promedio:</span>
+                <span className="font-semibold">{averageValue?.toFixed(1) || "--"} hPa</span>
+              </Badge>
+            </div>
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="icon" className="rounded-full bg-orange-500 hover:bg-orange-600 text-white">

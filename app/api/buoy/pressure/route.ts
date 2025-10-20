@@ -8,10 +8,14 @@ function formatDateForApi(date: Date): string {
   return date.toISOString().replace("T", " ").substring(0, 19)
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const range = searchParams.get("range") || "24h"
+    const hours = range === "7d" ? 168 : range === "48h" ? 48 : range === "12h" ? 12 : 24
+
     const now = new Date()
-    const past = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const past = new Date(now.getTime() - hours * 60 * 60 * 1000)
 
     const url = `${API_BASE}/${DEVICE_ID}/EMA/Atmospheric%20Pressure/${formatDateForApi(past)}/${formatDateForApi(now)}?token=${TOKEN}`
 

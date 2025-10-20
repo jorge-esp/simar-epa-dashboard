@@ -25,12 +25,12 @@ async function fetchBuoyData(endpoint: string): Promise<ApiResponse> {
 }
 
 // Specific API fetchers
-export const fetchWaveHeight = () => fetchBuoyData("wave-height")
+export const fetchWaveHeight = (timeRange = "24h") => fetchBuoyData(`wave-height?range=${timeRange}`)
 
-export const fetchAirTemperature = () => fetchBuoyData("temperature")
+export const fetchAirTemperature = (timeRange = "24h") => fetchBuoyData(`temperature?range=${timeRange}`)
 
-export const fetchWindSpeed = () => fetchBuoyData("wind-speed")
+export const fetchWindSpeed = (timeRange = "24h") => fetchBuoyData(`wind-speed?range=${timeRange}`)
 
-export const fetchAtmosphericPressure = () => fetchBuoyData("pressure")
+export const fetchAtmosphericPressure = (timeRange = "24h") => fetchBuoyData(`pressure?range=${timeRange}`)
 
-export const fetchWaveCount = () => fetchBuoyData("wave-count")
+export const fetchWaveCount = (timeRange = "24h") => fetchBuoyData(`wave-count?range=${timeRange}`)
