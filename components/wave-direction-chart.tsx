@@ -1,26 +1,51 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ResponsiveContainer, Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
-import { ArrowUpRight, Maximize2, Gauge } from "lucide-react"
+import { ResponsiveContainer, Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts"
+import { ArrowUpRight, Maximize2, Navigation } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import useSWR from "swr"
-import { fetchAtmosphericPressure } from "@/lib/api-client"
 import type { TimeRange } from "@/components/time-range-selector"
 import { convertToChileTime, formatChileDate, formatChileDateTime } from "@/lib/timezone-utils"
 
-interface PressureChartProps {
+interface WaveDirectionChartProps {
   timeRange: TimeRange
 }
 
-const fetcher = async (timeRange: TimeRange) => {
-  const response = await fetchAtmosphericPressure(timeRange)
+interface WaveDirectionData {
+  timestamp: string
+  direction: number
+  spread: number
+}
+
+interface ApiResponse {
+  data: WaveDirectionData[]
+  lastUpdate: string
+  currentValue: {
+    direction: number
+    spread: number
+  }
+}
+
+const fetcher = async (url: string, timeRange: TimeRange): Promise<any> => {
+  console.log("[v0] Fetching wave direction data for range:", timeRange)
+
+  const response = await fetch(`${url}?range=${timeRange}`)
+
+  if (!response.ok) {
+    console.error("[v0] API error:", response.status)
+    throw new Error(`API error: ${response.status}`)
+  }
+
+  const apiResponse: ApiResponse = await response.json()
+
+  console.log("[v0] Wave direction data received, points:", apiResponse.data?.length || 0)
 
   const useDate = timeRange === "48h" || timeRange === "7d"
 
-  const chartData = response.data
+  const chartData = apiResponse.data
     .map((item) => {
       const utcDate = new Date(item.timestamp)
       const chileDate = convertToChileTime(utcDate)
@@ -30,15 +55,26 @@ const fetcher = async (timeRange: TimeRange) => {
           ? formatChileDate(utcDate)
           : chileDate.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
         fullTime: formatChileDateTime(utcDate),
-        presion: Number(item.value),
+        direccion: item.direction,
+        dispersion: item.spread,
       }
     })
     .reverse()
 
+  console.log("[v0] Chart data transformed, points:", chartData.length)
+
   return {
-    lastUpdate: response.lastUpdate,
+    lastUpdate: apiResponse.lastUpdate,
     data: chartData,
+    currentValue: apiResponse.currentValue,
   }
+}
+
+// Convert degrees to cardinal direction
+const getCardinalDirection = (degrees: number): string => {
+  const directions = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"]
+  const index = Math.round(degrees / 45) % 8
+  return directions[index]
 }
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -46,25 +82,29 @@ const CustomTooltip = ({ active, payload }: any) => {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg">
         <p className="text-sm font-semibold text-gray-900">{payload[0].payload.fullTime}</p>
-        <p className="text-sm text-purple-600 font-medium mt-1">Presión: {payload[0].value.toFixed(1)} hPa</p>
+        <p className="text-sm text-blue-600 font-medium mt-1">
+          Dirección: {payload[0].value.toFixed(1)}° ({getCardinalDirection(payload[0].value)})
+        </p>
+        <p className="text-sm text-orange-600 font-medium">Dispersión: {payload[1].value.toFixed(1)}°</p>
       </div>
     )
   }
   return null
 }
 
-export function PressureChart({ timeRange }: PressureChartProps) {
+export function WaveDirectionChart({ timeRange }: WaveDirectionChartProps) {
   const {
     data: response,
     error,
     isLoading,
-  } = useSWR(["pressure-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 120000, // Update every 2 minutes (120 seconds)
+  } = useSWR(["/api/buoy/wave-direction", timeRange], ([url, range]) => fetcher(url, range), {
+    refreshInterval: 120000, // Update every 2 minutes
   })
 
-  const currentValue = response?.data[response.data.length - 1]?.presion
-  const averageValue = response?.data.length
-    ? response.data.reduce((sum, item) => sum + item.presion, 0) / response.data.length
+  const currentDirection = response?.currentValue?.direction
+  const currentSpread = response?.currentValue?.spread
+  const averageDirection = response?.data.length
+    ? response.data.reduce((sum, item) => sum + item.direccion, 0) / response.data.length
     : undefined
 
   const ChartComponent = ({ data }: { data: any[] }) => (
@@ -72,9 +112,17 @@ export function PressureChart({ timeRange }: PressureChartProps) {
       <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="time" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
-        <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
+        <YAxis
+          domain={[0, 360]}
+          ticks={[0, 90, 180, 270, 360]}
+          tick={{ fill: "#6b7280", fontSize: 12 }}
+          tickLine={false}
+          axisLine={false}
+        />
         <Tooltip content={<CustomTooltip />} />
-        <Line type="monotone" dataKey="presion" stroke="#a855f7" strokeWidth={2} dot={false} />
+        <Legend />
+        <Line type="monotone" dataKey="direccion" stroke="#3b82f6" strokeWidth={2} dot={false} name="Dirección (°)" />
+        <Line type="monotone" dataKey="dispersion" stroke="#f97316" strokeWidth={2} dot={false} name="Dispersión (°)" />
       </LineChart>
     </ResponsiveContainer>
   )
@@ -85,22 +133,32 @@ export function PressureChart({ timeRange }: PressureChartProps) {
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-card-foreground flex items-center gap-2">
-              <Gauge className="h-5 w-5" />
-              Presión Atmosférica
+              <Navigation className="h-5 w-5" />
+              Dirección y Dispersión de Olas
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">actualizado {response?.lastUpdate || "--:--"}</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex flex-col gap-1">
               <Badge variant="secondary" className="gap-1 px-3 py-1">
-                <span className="text-xs text-muted-foreground">Actual:</span>
-                <span className="w-2 h-2 rounded-full bg-purple-500" />
-                <span className="font-semibold">{currentValue?.toFixed(1) || "--"} hPa</span>
+                <span className="text-xs text-muted-foreground">Dirección:</span>
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="font-semibold">
+                  {currentDirection?.toFixed(0) || "--"}° (
+                  {currentDirection ? getCardinalDirection(currentDirection) : "--"})
+                </span>
                 <ArrowUpRight className="w-3 h-3" />
               </Badge>
               <Badge variant="outline" className="gap-1 px-3 py-1">
+                <span className="text-xs text-muted-foreground">Dispersión:</span>
+                <span className="font-semibold">{currentSpread?.toFixed(1) || "--"}°</span>
+              </Badge>
+              <Badge variant="outline" className="gap-1 px-3 py-1">
                 <span className="text-xs text-muted-foreground">Promedio:</span>
-                <span className="font-semibold">{averageValue?.toFixed(1) || "--"} hPa</span>
+                <span className="font-semibold">
+                  {averageDirection?.toFixed(0) || "--"}° (
+                  {averageDirection ? getCardinalDirection(averageDirection) : "--"})
+                </span>
               </Badge>
             </div>
             <Dialog>
@@ -111,7 +169,7 @@ export function PressureChart({ timeRange }: PressureChartProps) {
               </DialogTrigger>
               <DialogContent className="max-w-4xl">
                 <DialogHeader>
-                  <DialogTitle>Presión Atmosférica - Vista Detallada</DialogTitle>
+                  <DialogTitle>Dirección y Dispersión de Olas - Vista Detallada</DialogTitle>
                 </DialogHeader>
                 <div className="h-[500px]">
                   {isLoading ? (

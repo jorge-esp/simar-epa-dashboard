@@ -34,3 +34,5 @@ export const fetchWindSpeed = (timeRange = "24h") => fetchBuoyData(`wind-speed?r
 export const fetchAtmosphericPressure = (timeRange = "24h") => fetchBuoyData(`pressure?range=${timeRange}`)
 
 export const fetchWaveCount = (timeRange = "24h") => fetchBuoyData(`wave-count?range=${timeRange}`)
+
+export const fetchWaveDirection = (timeRange = "24h") => fetchBuoyData(`wave-direction?range=${timeRange}`)

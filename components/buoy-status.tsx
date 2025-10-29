@@ -10,7 +10,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function BuoyStatus() {
   const { data: status, error } = useSWR("/api/buoy/status", fetcher, {
-    refreshInterval: 60000, // Update every 60 seconds
+    refreshInterval: 120000, // Update every 2 minutes (120 seconds)
   })
 
   const isOperational = status && !error
@@ -37,8 +37,8 @@ export function BuoyStatus() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg overflow-hidden bg-primary/10">
-              <Image src="/images/boya-arica.png" alt="Boya Arica" width={48} height={48} className="object-cover" />
+            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-muted">
+              <Image src="/simar-epa-buoy.png" alt="Boya Arica" fill className="object-cover" />
             </div>
             <div>
               <CardTitle className="text-lg font-semibold text-card-foreground">Boya Arica</CardTitle>

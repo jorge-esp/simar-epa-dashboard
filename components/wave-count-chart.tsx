@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import useSWR from "swr"
 import { fetchWaveCount } from "@/lib/api-client"
 import type { TimeRange } from "@/components/time-range-selector"
+import { convertToChileTime, formatChileDate, formatChileDateTime } from "@/lib/timezone-utils"
 
 interface WaveCountChartProps {
   timeRange: TimeRange
@@ -21,18 +22,14 @@ const fetcher = async (timeRange: TimeRange) => {
 
   const chartData = response.data
     .map((item) => {
-      const date = new Date(item.timestamp)
+      const utcDate = new Date(item.timestamp)
+      const chileDate = convertToChileTime(utcDate)
+
       return {
         time: useDate
-          ? date.toLocaleDateString("es-CL", { day: "numeric", month: "short" })
-          : date.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        fullTime: date.toLocaleString("es-CL", {
-          day: "numeric",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
+          ? formatChileDate(utcDate)
+          : chileDate.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
+        fullTime: formatChileDateTime(utcDate),
         cantidad: Number(item.value),
       }
     })
@@ -62,7 +59,7 @@ export function WaveCountChart({ timeRange }: WaveCountChartProps) {
     error,
     isLoading,
   } = useSWR(["wave-count-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 60000,
+    refreshInterval: 120000, // Update every 2 minutes (120 seconds)
   })
 
   const currentValue = response?.data[response.data.length - 1]?.cantidad

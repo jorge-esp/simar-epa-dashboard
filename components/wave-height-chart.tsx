@@ -10,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import useSWR from "swr"
 import { fetchWaveHeight } from "@/lib/api-client"
 import type { TimeRange } from "@/components/time-range-selector"
+import { convertToChileTime, formatChileDate, formatChileDateTime } from "@/lib/timezone-utils"
 
 interface WaveHeightChartProps {
   timeRange: TimeRange
@@ -22,18 +23,14 @@ const fetcher = async (timeRange: TimeRange) => {
 
   const chartData = response.data
     .map((item) => {
-      const date = new Date(item.timestamp)
+      const utcDate = new Date(item.timestamp)
+      const chileDate = convertToChileTime(utcDate)
+
       return {
         time: useDate
-          ? date.toLocaleDateString("es-CL", { day: "numeric", month: "short" })
-          : date.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        fullTime: date.toLocaleString("es-CL", {
-          day: "numeric",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
+          ? formatChileDate(utcDate)
+          : chileDate.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
+        fullTime: formatChileDateTime(utcDate),
         altura: Number(item.value),
       }
     })
@@ -63,7 +60,7 @@ export function WaveHeightChart({ timeRange }: WaveHeightChartProps) {
     error,
     isLoading,
   } = useSWR(["wave-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 60000,
+    refreshInterval: 120000, // Update every 2 minutes (120 seconds)
   })
 
   const currentValue = response?.data[response.data.length - 1]?.altura
