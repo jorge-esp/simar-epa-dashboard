@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 
-export type TimeRange = "12h" | "24h" | "48h" | "7d"
+export type TimeRange = "12h" | "24h" | "48h"
 
 interface TimeRangeSelectorProps {
   value: TimeRange
@@ -14,7 +14,6 @@ export function TimeRangeSelector({ value, onChange }: TimeRangeSelectorProps) {
     { value: "12h", label: "12h" },
     { value: "24h", label: "24h" },
     { value: "48h", label: "48h" },
-    { value: "7d", label: "7d" },
   ]
 
   return (

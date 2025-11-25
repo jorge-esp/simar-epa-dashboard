@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import useSWR from "swr"
 import type { TimeRange } from "@/components/time-range-selector"
-import { convertToChileTime, formatChileDate, formatChileDateTime } from "@/lib/timezone-utils"
+import { formatChileDate, formatChileDateTime, formatChileTimeOnly, shouldShowDate } from "@/lib/timezone-utils"
 
 interface WaveDirectionChartProps {
   timeRange: TimeRange
@@ -43,18 +43,14 @@ const fetcher = async (url: string, timeRange: TimeRange): Promise<any> => {
 
   console.log("[v0] Wave direction data received, points:", apiResponse.data?.length || 0)
 
-  const useDate = timeRange === "48h" || timeRange === "7d"
+  const useDate = shouldShowDate(timeRange)
 
   const chartData = apiResponse.data
     .map((item) => {
-      const utcDate = new Date(item.timestamp)
-      const chileDate = convertToChileTime(utcDate)
-
+      const timestamp = item.timestamp
       return {
-        time: useDate
-          ? formatChileDate(utcDate)
-          : chileDate.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        fullTime: formatChileDateTime(utcDate),
+        time: useDate ? formatChileDate(timestamp) : formatChileTimeOnly(timestamp),
+        fullTime: formatChileDateTime(timestamp),
         direccion: item.direction,
         dispersion: item.spread,
       }
@@ -70,7 +66,7 @@ const fetcher = async (url: string, timeRange: TimeRange): Promise<any> => {
   }
 }
 
-// Convert degrees to cardinal direction
+// Convertir grados a dirección cardinal
 const getCardinalDirection = (degrees: number): string => {
   const directions = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"]
   const index = Math.round(degrees / 45) % 8
@@ -118,6 +114,7 @@ export function WaveDirectionChart({ timeRange }: WaveDirectionChartProps) {
           tick={{ fill: "#6b7280", fontSize: 12 }}
           tickLine={false}
           axisLine={false}
+          label={{ value: "Grados (°)", angle: -90, position: "insideLeft", style: { fill: "#6b7280", fontSize: 12 } }}
         />
         <Tooltip content={<CustomTooltip />} />
         <Legend />

@@ -1,25 +1,36 @@
+/**
+ * Sidebar de Navegación
+ *
+ * Menú lateral con enlaces a todas las secciones del dashboard.
+ * Responsive: se sobrepone en móvil, siempre visible en desktop.
+ */
+
 "use client"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Waves, Wind, Thermometer, Gauge, Activity, Navigation } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+// Definición de todas las rutas de navegación
 const navigation = [
-  { name: "Inicio", href: "/", icon: Home },
-  { name: "Altura de Olas", href: "/graficos/altura-olas", icon: Waves },
-  { name: "Dirección de Olas", href: "/graficos/direccion-olas", icon: Navigation },
-  { name: "Velocidad del Viento", href: "/graficos/velocidad-viento", icon: Wind },
-  { name: "Temperatura", href: "/graficos/temperatura", icon: Thermometer },
-  { name: "Presión Atmosférica", href: "/graficos/presion", icon: Gauge },
-  { name: "Cantidad de Olas", href: "/graficos/cantidad-olas", icon: Activity },
+  { name: "Inicio", href: "/", icon: "🏠" },
+  { name: "Altura de Olas", href: "/graficos/altura-olas", icon: "🌊" },
+  { name: "Dirección de Olas", href: "/graficos/direccion-olas", icon: "🧭" },
+  { name: "Velocidad del Viento", href: "/graficos/velocidad-viento", icon: "💨" },
+  { name: "Temperatura", href: "/graficos/temperatura", icon: "🌡️" },
+  { name: "Presión Atmosférica", href: "/graficos/presion", icon: "📊" },
+  { name: "Cantidad de Olas", href: "/graficos/cantidad-olas", icon: "📈" },
+  { name: "Reportes Comunitarios", href: "/reportes-comunitarios", icon: "💬" },
+  { name: "Glosario", href: "/glosario", icon: "📖" },
+  { name: "Guía de Lectura", href: "/guia", icon: "❓" },
 ]
 
 interface SidebarProps {
-  isOpen: boolean
+  isOpen: boolean // Estado de apertura/cierre
 }
 
 export function Sidebar({ isOpen }: SidebarProps) {
+  // Obtener ruta actual para marcar el enlace activo
   const pathname = usePathname()
 
   return (
@@ -32,10 +43,10 @@ export function Sidebar({ isOpen }: SidebarProps) {
       )}
     >
       <div className="min-w-64 flex flex-col h-full">
+        {/* Navegación principal con scroll si es necesario */}
         <nav className="flex-1 p-4 space-y-1 pt-6">
           {navigation.map((item) => {
             const isActive = pathname === item.href
-            const Icon = item.icon
 
             return (
               <Link
@@ -48,7 +59,7 @@ export function Sidebar({ isOpen }: SidebarProps) {
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
               >
-                <Icon className="w-5 h-5" />
+                <span className="text-lg">{item.icon}</span>
                 {item.name}
               </Link>
             )

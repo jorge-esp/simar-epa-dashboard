@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import useSWR from "swr"
 import { fetchWindSpeed } from "@/lib/api-client"
 import type { TimeRange } from "@/components/time-range-selector"
-import { convertToChileTime, formatChileDate, formatChileDateTime } from "@/lib/timezone-utils"
+import { formatChileDate, formatChileDateTime, formatChileTimeOnly, shouldShowDate } from "@/lib/timezone-utils"
 
 interface WindSpeedChartProps {
   timeRange: TimeRange
@@ -18,18 +18,14 @@ interface WindSpeedChartProps {
 const fetcher = async (timeRange: TimeRange) => {
   const response = await fetchWindSpeed(timeRange)
 
-  const useDate = timeRange === "48h" || timeRange === "7d"
+  const useDate = shouldShowDate(timeRange)
 
   const chartData = response.data
     .map((item) => {
-      const utcDate = new Date(item.timestamp)
-      const chileDate = convertToChileTime(utcDate)
-
+      const timestamp = item.timestamp
       return {
-        time: useDate
-          ? formatChileDate(utcDate)
-          : chileDate.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        fullTime: formatChileDateTime(utcDate),
+        time: useDate ? formatChileDate(timestamp) : formatChileTimeOnly(timestamp),
+        fullTime: formatChileDateTime(timestamp),
         velocidad: Number(item.value),
       }
     })
@@ -59,7 +55,7 @@ export function WindSpeedChart({ timeRange }: WindSpeedChartProps) {
     error,
     isLoading,
   } = useSWR(["wind-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 120000, // Update every 2 minutes (120 seconds)
+    refreshInterval: 120000, // Cada 2 minutos
   })
 
   const currentValue = response?.data[response.data.length - 1]?.velocidad
@@ -72,7 +68,17 @@ export function WindSpeedChart({ timeRange }: WindSpeedChartProps) {
       <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="time" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
-        <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
+        <YAxis
+          tick={{ fill: "#6b7280", fontSize: 12 }}
+          tickLine={false}
+          axisLine={false}
+          label={{
+            value: "Velocidad (m/s)",
+            angle: -90,
+            position: "insideLeft",
+            style: { fill: "#6b7280", fontSize: 12 },
+          }}
+        />
         <Tooltip content={<CustomTooltip />} />
         <Line type="monotone" dataKey="velocidad" stroke="#10b981" strokeWidth={2} dot={false} />
       </LineChart>

@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Maritime theme - Deep ocean blues with technical accents */
+  /* Maritime theme - Deep navy blue corporate */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -12,8 +12,8 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
 
-  /* Primary - Deep ocean blue */
-  --primary: oklch(0.205 0 0);
+  /* Primary color cambiado a azul marino corporativo (#2E4482) */
+  --primary: oklch(0.35 0.12 264);
   --primary-foreground: oklch(0.985 0 0);
 
   /* Secondary - Nautical gray */
@@ -35,21 +35,23 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
 
-  /* Chart colors - Ocean themed */
-  --chart-1: oklch(0.646 0.222 41.116); /* Deep blue */
+  /* Chart colors actualizados para incluir el azul marino corporativo */
+  --chart-1: oklch(0.35 0.12 264); /* Navy blue corporativo */
   --chart-2: oklch(0.6 0.118 184.704); /* Cyan */
-  --chart-3: oklch(0.398 0.07 227.392); /* Navy */
-  --chart-4: oklch(0.828 0.189 84.429); /* Light blue */
-  --chart-5: oklch(0.769 0.188 70.08); /* Medium blue */
+  --chart-3: oklch(0.45 0.1 250); /* Medium blue */
+  --chart-4: oklch(0.65 0.15 240); /* Light blue */
+  --chart-5: oklch(0.55 0.14 260); /* Blue accent */
 
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+
+  /* Sidebar actualizado con el azul marino corporativo */
+  --sidebar: oklch(0.35 0.12 264);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.45 0.1 250);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-accent: oklch(0.3 0.12 264);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.25 0.12 264);
   --sidebar-ring: oklch(0.708 0 0);
 }
 
@@ -61,8 +63,9 @@
   --popover: oklch(0.145 0 0);
   --popover-foreground: oklch(0.985 0 0);
 
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  /* Primary en modo oscuro con el azul marino */
+  --primary: oklch(0.55 0.14 260);
+  --primary-foreground: oklch(0.985 0 0);
 
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -80,25 +83,29 @@
   --input: oklch(0.269 0 0);
   --ring: oklch(0.439 0 0);
 
-  --chart-1: oklch(0.488 0.243 264.376);
+  /* Chart colors en modo oscuro con azul marino */
+  --chart-1: oklch(0.55 0.14 260);
   --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-3: oklch(0.45 0.1 250);
+  --chart-4: oklch(0.65 0.15 240);
+  --chart-5: oklch(0.6 0.12 255);
 
-  --sidebar: oklch(0.205 0 0);
+  /* Sidebar en modo oscuro con azul marino */
+  --sidebar: oklch(0.25 0.12 264);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.55 0.14 260);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.3 0.12 264);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-border: oklch(0.2 0.12 264);
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* Usando fuentes del sistema en lugar de Geist */
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -143,5 +150,9 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Reducir tamaño de fuente base de 16px a 14px para dar más densidad visual al dashboard */
+  html {
+    font-size: 14px;
   }
 }

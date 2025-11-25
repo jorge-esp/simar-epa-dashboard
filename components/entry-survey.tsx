@@ -10,12 +10,12 @@ export function EntrySurvey() {
   const [selectedReason, setSelectedReason] = useState<string>("")
 
   useEffect(() => {
-    // Check if user has already answered the entry survey today
+    // Verificar si el usuario ya respondió la encuesta de entrada hoy
     const lastSurvey = localStorage.getItem("entry_survey_date")
     const today = new Date().toDateString()
 
     if (lastSurvey !== today) {
-      // Show survey after 2 seconds
+      // Mostrar encuesta después de 2 segundos
       const timer = setTimeout(() => {
         setIsOpen(true)
       }, 2000)
@@ -26,14 +26,14 @@ export function EntrySurvey() {
   const handleSubmit = () => {
     if (!selectedReason) return
 
-    // Save survey response
+    // Guardar respuesta de la encuesta
     const response = {
       type: "entry",
       reason: selectedReason,
       timestamp: new Date().toISOString(),
     }
 
-    // Save to localStorage (later can be sent to database)
+    // Guardar en localStorage (luego se puede enviar a la base de datos)
     const surveys = JSON.parse(localStorage.getItem("surveys") || "[]")
     surveys.push(response)
     localStorage.setItem("surveys", JSON.stringify(surveys))
@@ -58,13 +58,7 @@ export function EntrySurvey() {
         <p className="text-sm text-muted-foreground mb-6">¿Qué información está buscando hoy?</p>
 
         <div className="space-y-3">
-          {[
-            "Condiciones actuales del mar",
-            "Planificación de actividades marítimas",
-            "Monitoreo de seguridad portuaria",
-            "Investigación o estudio",
-            "Otro",
-          ].map((reason) => (
+          {["Condiciones actuales del mar", "Planificación de actividades marítimas", "Otro"].map((reason) => (
             <button
               key={reason}
               onClick={() => setSelectedReason(reason)}

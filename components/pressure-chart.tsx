@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import useSWR from "swr"
 import { fetchAtmosphericPressure } from "@/lib/api-client"
 import type { TimeRange } from "@/components/time-range-selector"
-import { convertToChileTime, formatChileDate, formatChileDateTime } from "@/lib/timezone-utils"
+import { formatChileDate, formatChileDateTime, formatChileTimeOnly, shouldShowDate } from "@/lib/timezone-utils"
 
 interface PressureChartProps {
   timeRange: TimeRange
@@ -18,18 +18,14 @@ interface PressureChartProps {
 const fetcher = async (timeRange: TimeRange) => {
   const response = await fetchAtmosphericPressure(timeRange)
 
-  const useDate = timeRange === "48h" || timeRange === "7d"
+  const useDate = shouldShowDate(timeRange)
 
   const chartData = response.data
     .map((item) => {
-      const utcDate = new Date(item.timestamp)
-      const chileDate = convertToChileTime(utcDate)
-
+      const timestamp = item.timestamp
       return {
-        time: useDate
-          ? formatChileDate(utcDate)
-          : chileDate.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        fullTime: formatChileDateTime(utcDate),
+        time: useDate ? formatChileDate(timestamp) : formatChileTimeOnly(timestamp),
+        fullTime: formatChileDateTime(timestamp),
         presion: Number(item.value),
       }
     })
@@ -59,7 +55,7 @@ export function PressureChart({ timeRange }: PressureChartProps) {
     error,
     isLoading,
   } = useSWR(["pressure-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 120000, // Update every 2 minutes (120 seconds)
+    refreshInterval: 120000, // Actualizacion cada 2 minutos (120000 milisegundos)
   })
 
   const currentValue = response?.data[response.data.length - 1]?.presion
@@ -67,17 +63,43 @@ export function PressureChart({ timeRange }: PressureChartProps) {
     ? response.data.reduce((sum, item) => sum + item.presion, 0) / response.data.length
     : undefined
 
-  const ChartComponent = ({ data }: { data: any[] }) => (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-        <XAxis dataKey="time" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
-        <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
-        <Tooltip content={<CustomTooltip />} />
-        <Line type="monotone" dataKey="presion" stroke="#a855f7" strokeWidth={2} dot={false} />
-      </LineChart>
-    </ResponsiveContainer>
-  )
+  const ChartComponent = ({ data }: { data: any[] }) => {
+    // Esto permite ver mejor las variaciones pequeñas de presión atmosférica
+    const pressureValues = data.map((item) => item.presion)
+    const minPressure = Math.min(...pressureValues)
+    const maxPressure = Math.max(...pressureValues)
+
+    // Agregar un margen del 0.5% arriba y abajo para que los puntos no toquen los bordes
+    const range = maxPressure - minPressure
+    const padding = range * 0.005 || 1 // Mínimo 1 hPa de padding si no hay variación
+
+    const yDomainMin = Math.floor(minPressure - padding)
+    const yDomainMax = Math.ceil(maxPressure + padding)
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis dataKey="time" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
+          <YAxis
+            domain={[yDomainMin, yDomainMax]}
+            tick={{ fill: "#6b7280", fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
+            label={{
+              value: "Presión (hPa)",
+              angle: -90,
+              position: "insideLeft",
+              style: { fill: "#6b7280", fontSize: 12 },
+            }}
+          />
+          {/* Additional updates can be inserted here */}
+          <Tooltip content={<CustomTooltip />} />
+          <Line type="monotone" dataKey="presion" stroke="#a855f7" strokeWidth={2} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    )
+  }
 
   return (
     <Card className="bg-card">

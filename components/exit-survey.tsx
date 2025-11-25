@@ -12,7 +12,7 @@ export function ExitSurvey() {
   const [feedback, setFeedback] = useState<string>("")
 
   useEffect(() => {
-    // Show exit survey when user tries to leave or after 5 minutes
+    // Mostrar encuesta de salida cuando el usuario intenta salir o después de 5 minutos
     const handleBeforeUnload = () => {
       const hasAnswered = sessionStorage.getItem("exit_survey_answered")
       if (!hasAnswered) {
@@ -20,13 +20,13 @@ export function ExitSurvey() {
       }
     }
 
-    // Show after 5 minutes if not answered
+    // Mostrar después de 5 minutos si no se respondió
     const timer = setTimeout(() => {
       const hasAnswered = sessionStorage.getItem("exit_survey_answered")
       if (!hasAnswered) {
         setIsOpen(true)
       }
-    }, 300000) // 5 minutes
+    }, 300000) // 5 minutos
 
     window.addEventListener("beforeunload", handleBeforeUnload)
 
@@ -39,7 +39,7 @@ export function ExitSurvey() {
   const handleSubmit = () => {
     if (rating === 0) return
 
-    // Save survey response
+    // Guardar respuesta de la encuesta
     const response = {
       type: "exit",
       rating,
@@ -47,7 +47,7 @@ export function ExitSurvey() {
       timestamp: new Date().toISOString(),
     }
 
-    // Save to localStorage (later can be sent to database)
+    // Guardar en localStorage (luego se puede enviar a la base de datos)
     const surveys = JSON.parse(localStorage.getItem("surveys") || "[]")
     surveys.push(response)
     localStorage.setItem("surveys", JSON.stringify(surveys))

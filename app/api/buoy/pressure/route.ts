@@ -1,3 +1,14 @@
+/**
+ * API ROUTE: Presión Atmosférica
+ *
+ * Obtiene datos históricos de presión atmosférica (ATMS) medida por la boya.
+ *
+ * Parámetro de consulta:
+ * - range: "12h" | "24h" | "48h" | "7d"
+ *
+ * Datos retornados en hPa (hectopascales)
+ */
+
 import { NextResponse } from "next/server"
 
 const API_BASE = "https://oceancom.msm-data.com/api/device"
@@ -17,6 +28,7 @@ export async function GET(request: Request) {
     const now = new Date()
     const past = new Date(now.getTime() - hours * 60 * 60 * 1000)
 
+    // Endpoint con "Atmospheric%20Pressure" codificado en URL
     const url = `${API_BASE}/${DEVICE_ID}/EMA/Atmospheric%20Pressure/${formatDateForApi(past)}/${formatDateForApi(now)}?token=${TOKEN}`
 
     console.log("[v0] Fetching pressure from:", url)
@@ -35,7 +47,8 @@ export async function GET(request: Request) {
 
     console.log("[v0] Pressure API response received")
 
-    // Structure: data.EMA.0["Atmospheric Pressure"].ATMS.values
+    // Extraer datos de presión atmosférica (ATMS)
+    // Estructura: data.EMA.0["Atmospheric Pressure"].ATMS.values
     const pressureData = apiResponse?.data?.EMA?.[0]?.["Atmospheric Pressure"]?.ATMS?.values
 
     if (!pressureData) {
@@ -46,14 +59,13 @@ export async function GET(request: Request) {
       })
     }
 
-    // Convert the values object to an array
     const dataArray = Object.values(pressureData) as Array<{ date: string; value: string; unit: string }>
 
     console.log("[v0] Pressure data points found:", dataArray.length)
 
     const transformedData = dataArray.map((item) => ({
       timestamp: item.date,
-      value: Number.parseFloat(item.value),
+      value: Number.parseFloat(item.value), // Presión en hPa
     }))
 
     console.log("[v0] Pressure data transformed successfully, first value:", transformedData[0])

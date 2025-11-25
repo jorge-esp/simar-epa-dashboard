@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import useSWR from "swr"
 import { fetchWaveCount } from "@/lib/api-client"
 import type { TimeRange } from "@/components/time-range-selector"
-import { convertToChileTime, formatChileDate, formatChileDateTime } from "@/lib/timezone-utils"
+import { formatChileDate, formatChileDateTime, formatChileTimeOnly, shouldShowDate } from "@/lib/timezone-utils"
 
 interface WaveCountChartProps {
   timeRange: TimeRange
@@ -18,18 +18,14 @@ interface WaveCountChartProps {
 const fetcher = async (timeRange: TimeRange) => {
   const response = await fetchWaveCount(timeRange)
 
-  const useDate = timeRange === "48h" || timeRange === "7d"
+  const useDate = shouldShowDate(timeRange)
 
   const chartData = response.data
     .map((item) => {
-      const utcDate = new Date(item.timestamp)
-      const chileDate = convertToChileTime(utcDate)
-
+      const timestamp = item.timestamp
       return {
-        time: useDate
-          ? formatChileDate(utcDate)
-          : chileDate.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        fullTime: formatChileDateTime(utcDate),
+        time: useDate ? formatChileDate(timestamp) : formatChileTimeOnly(timestamp),
+        fullTime: formatChileDateTime(timestamp),
         cantidad: Number(item.value),
       }
     })

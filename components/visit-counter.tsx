@@ -8,11 +8,11 @@ export function VisitCounter() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Get current visit count from localStorage
+    // Obtener contador de visitas actual desde localStorage
     const currentVisits = localStorage.getItem("simar-epa-visits")
     const visitCount = currentVisits ? Number.parseInt(currentVisits, 10) : 0
 
-    // Increment visit count
+    // Incrementar contador de visitas
     const newVisitCount = visitCount + 1
     localStorage.setItem("simar-epa-visits", newVisitCount.toString())
 

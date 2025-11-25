@@ -54,7 +54,7 @@ export async function GET(request: Request) {
     console.log("[v0] Has Waves?", !!apiResponse?.data?.Waves)
     console.log("[v0] Waves keys:", apiResponse?.data?.Waves ? Object.keys(apiResponse.data.Waves) : "none")
 
-    // Try accessing with string key "0" instead of numeric index
+    // Intentar acceder con clave string "0" en lugar de índice numérico
     const wavesData = apiResponse?.data?.Waves
     const angularData = wavesData?.["0"]?.Angular || wavesData?.[0]?.Angular
 
@@ -71,13 +71,13 @@ export async function GET(request: Request) {
       })
     }
 
-    // Convert the numbered objects to arrays - access the values property
+    // Convertir los objetos numerados a arrays - acceder a la propiedad values
     const directionData = angularData.VDIR.values
     const spreadData = angularData.VPSP.values
 
     console.log("[v0] Wave direction data points found:", Object.keys(directionData).length)
 
-    // Transform the data by combining VDIR and VPSP
+    // Transformar los datos combinando VDIR y VPSP
     const transformedData = Object.keys(directionData).map((key) => {
       const dirItem = directionData[key]
       const sprItem = spreadData[key]
@@ -89,7 +89,7 @@ export async function GET(request: Request) {
       }
     })
 
-    // Sort by timestamp (most recent first)
+    // Ordenar por timestamp (más reciente primero)
     transformedData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
     console.log("[v0] Wave direction data transformed successfully, total points:", transformedData.length)

@@ -26,7 +26,7 @@ export async function GET() {
       return NextResponse.json({ lastUpdate: null, data: [] })
     }
 
-    // Convert the values object to an array
+    // Convertir el objeto de valores a un array
     const valuesArray = Object.values(waveCountData)
     console.log("[v0] Wave count data points found:", valuesArray.length)
 
@@ -35,7 +35,7 @@ export async function GET() {
       console.log("[v0] Last wave count value:", valuesArray[valuesArray.length - 1])
     }
 
-    // Transform the data to the format expected by the chart
+    // Transformar los datos al formato esperado por el gráfico
     const transformedData = valuesArray.map((item: any) => ({
       timestamp: item.date,
       value: Number.parseFloat(item.value),

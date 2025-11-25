@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import useSWR from "swr"
 import { fetchWaveHeight } from "@/lib/api-client"
 import type { TimeRange } from "@/components/time-range-selector"
-import { convertToChileTime, formatChileDate, formatChileDateTime } from "@/lib/timezone-utils"
+import { formatChileDate, formatChileDateTime, formatChileTimeOnly, shouldShowDate } from "@/lib/timezone-utils"
 
 interface WaveHeightChartProps {
   timeRange: TimeRange
@@ -19,18 +19,14 @@ interface WaveHeightChartProps {
 const fetcher = async (timeRange: TimeRange) => {
   const response = await fetchWaveHeight(timeRange)
 
-  const useDate = timeRange === "48h" || timeRange === "7d"
+  const useDate = shouldShowDate(timeRange)
 
   const chartData = response.data
     .map((item) => {
-      const utcDate = new Date(item.timestamp)
-      const chileDate = convertToChileTime(utcDate)
-
+      const timestamp = item.timestamp
       return {
-        time: useDate
-          ? formatChileDate(utcDate)
-          : chileDate.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        fullTime: formatChileDateTime(utcDate),
+        time: useDate ? formatChileDate(timestamp) : formatChileTimeOnly(timestamp),
+        fullTime: formatChileDateTime(timestamp),
         altura: Number(item.value),
       }
     })
@@ -74,7 +70,13 @@ export function WaveHeightChart({ timeRange }: WaveHeightChartProps) {
       <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="time" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
-        <YAxis domain={[0, 2]} tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
+        <YAxis
+          domain={[0, 2]}
+          tick={{ fill: "#6b7280", fontSize: 12 }}
+          tickLine={false}
+          axisLine={false}
+          label={{ value: "Altura (m)", angle: -90, position: "insideLeft", style: { fill: "#6b7280", fontSize: 12 } }}
+        />
         <Tooltip content={<CustomTooltip />} />
         <ReferenceLine
           y={1.75}
@@ -95,7 +97,7 @@ export function WaveHeightChart({ timeRange }: WaveHeightChartProps) {
           <div>
             <CardTitle className="text-card-foreground flex items-center gap-2">
               <Waves className="h-5 w-5" />
-              Altura de Olas
+              Altura Significativa (H 1/3)
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">actualizado {response?.lastUpdate || "--:--"}</p>
           </div>

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import useSWR from "swr"
 import { fetchAirTemperature } from "@/lib/api-client"
 import type { TimeRange } from "@/components/time-range-selector"
-import { convertToChileTime, formatChileDate, formatChileDateTime } from "@/lib/timezone-utils"
+import { formatChileDate, formatChileDateTime, formatChileTimeOnly, shouldShowDate } from "@/lib/timezone-utils"
 
 interface TemperatureChartProps {
   timeRange: TimeRange
@@ -18,18 +18,14 @@ interface TemperatureChartProps {
 const fetcher = async (timeRange: TimeRange) => {
   const response = await fetchAirTemperature(timeRange)
 
-  const useDate = timeRange === "48h" || timeRange === "7d"
+  const useDate = shouldShowDate(timeRange)
 
   const chartData = response.data
     .map((item) => {
-      const utcDate = new Date(item.timestamp)
-      const chileDate = convertToChileTime(utcDate)
-
+      const timestamp = item.timestamp
       return {
-        time: useDate
-          ? formatChileDate(utcDate)
-          : chileDate.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        fullTime: formatChileDateTime(utcDate),
+        time: useDate ? formatChileDate(timestamp) : formatChileTimeOnly(timestamp),
+        fullTime: formatChileDateTime(timestamp),
         temperatura: Number(item.value),
       }
     })
@@ -59,7 +55,7 @@ export function TemperatureChart({ timeRange }: TemperatureChartProps) {
     error,
     isLoading,
   } = useSWR(["temp-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 120000, // Update every 2 minutes (120 seconds)
+    refreshInterval: 120000, // Actualizacion cada 2 minutos (120 segundos)
   })
 
   const currentValue = response?.data[response.data.length - 1]?.temperatura
@@ -72,7 +68,17 @@ export function TemperatureChart({ timeRange }: TemperatureChartProps) {
       <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="time" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
-        <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
+        <YAxis
+          tick={{ fill: "#6b7280", fontSize: 12 }}
+          tickLine={false}
+          axisLine={false}
+          label={{
+            value: "Temperatura (°C)",
+            angle: -90,
+            position: "insideLeft",
+            style: { fill: "#6b7280", fontSize: 12 },
+          }}
+        />
         <Tooltip content={<CustomTooltip />} />
         <Line type="monotone" dataKey="temperatura" stroke="#f97316" strokeWidth={2} dot={false} />
       </LineChart>

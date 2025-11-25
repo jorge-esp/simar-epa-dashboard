@@ -1,9 +1,24 @@
+/**
+ * API ROUTE: Temperatura del Aire
+ *
+ * Obtiene datos históricos de temperatura del aire (dry temperature - DRYT)
+ * desde la estación meteorológica de la boya.
+ *
+ * Parámetro de consulta:
+ * - range: "12h" | "24h" | "48h" | "7d"
+ *
+ * Datos retornados en °C (grados Celsius)
+ */
+
 import { NextResponse } from "next/server"
 
 const API_BASE = "https://oceancom.msm-data.com/api/device"
 const DEVICE_ID = "10"
 const TOKEN = "91b448bbb9d19b6c651e8f4832fcb6c9"
 
+/**
+ * Formatea fecha para la API en formato: "YYYY-MM-DD HH:MM:SS"
+ */
 function formatDateForApi(date: Date): string {
   return date.toISOString().replace("T", " ").substring(0, 19)
 }
@@ -17,6 +32,7 @@ export async function GET(request: Request) {
     const now = new Date()
     const past = new Date(now.getTime() - hours * 60 * 60 * 1000)
 
+    // Endpoint de temperatura con espacios codificados
     const url = `${API_BASE}/${DEVICE_ID}/EMA/Temperature/${formatDateForApi(past)}/${formatDateForApi(now)}?token=${TOKEN}`
 
     console.log("[v0] Fetching temperature from:", url)
@@ -35,7 +51,8 @@ export async function GET(request: Request) {
 
     console.log("[v0] Temperature API response received")
 
-    // Structure: data.EMA.0.Temperature.DRYT.values (or DEWT for dew point)
+    // Extraer datos de temperatura seca (DRYT) o temperatura de rocío (DEWT) como fallback
+    // Estructura: data.EMA.0.Temperature.DRYT.values
     const tempData =
       apiResponse?.data?.EMA?.[0]?.Temperature?.DRYT?.values || apiResponse?.data?.EMA?.[0]?.Temperature?.DEWT?.values
 
@@ -47,14 +64,15 @@ export async function GET(request: Request) {
       })
     }
 
-    // Convert the values object to an array
+    // Convertir objeto de valores a array
     const dataArray = Object.values(tempData) as Array<{ date: string; value: string; unit: string }>
 
     console.log("[v0] Temperature data points found:", dataArray.length)
 
+    // Transformar datos: parsear valores string a números
     const transformedData = dataArray.map((item) => ({
       timestamp: item.date,
-      value: Number.parseFloat(item.value),
+      value: Number.parseFloat(item.value), // Temperatura en °C
     }))
 
     console.log("[v0] Temperature data transformed successfully, first value:", transformedData[0])
