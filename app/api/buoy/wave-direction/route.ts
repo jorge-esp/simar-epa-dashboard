@@ -1,3 +1,20 @@
+/**
+ * API ROUTE: Dirección y Dispersión de Olas
+ *
+ * Este endpoint obtiene datos históricos de dirección y dispersión angular de olas
+ * desde la boya oceanográfica SIMAR-EPA.
+ *
+ * Parámetros de consulta:
+ * - range: "12h" | "24h" | "48h" | "7d" (default: "24h")
+ *
+ * Datos retornados:
+ * - VDIR: Dirección media de las olas (grados, 0-360°)
+ * - VPSP: Dispersión angular (grados)
+ *
+ * La dirección se mide en grados donde:
+ * - 0° = Norte, 90° = Este, 180° = Sur, 270° = Oeste
+ */
+
 import { NextResponse } from "next/server"
 
 const API_BASE = "https://oceancom.msm-data.com/api/device"
