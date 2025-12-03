@@ -1,9 +1,19 @@
+import type React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { WaveIcon, WindIcon, ThermometerIcon, CompassIcon, TrendingUpIcon } from "@/components/icons"
+import { BookIcon } from "@/components/icons" // Added import for BookIcon
+
+const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  Oleaje: WaveIcon,
+  Viento: WindIcon,
+  "Condiciones Atmosféricas": ThermometerIcon,
+  Navegación: CompassIcon,
+  "Interpretación de Datos": TrendingUpIcon,
+}
 
 const glossaryTerms = [
   {
     category: "Oleaje",
-    icon: "🌊",
     terms: [
       {
         term: "Altura de Olas (m)",
@@ -41,7 +51,6 @@ const glossaryTerms = [
   },
   {
     category: "Viento",
-    icon: "💨",
     terms: [
       {
         term: "Velocidad del Viento (m/s)",
@@ -65,7 +74,6 @@ const glossaryTerms = [
   },
   {
     category: "Condiciones Atmosféricas",
-    icon: "🌡️",
     terms: [
       {
         term: "Presión Atmosférica (hPa)",
@@ -84,7 +92,6 @@ const glossaryTerms = [
   },
   {
     category: "Navegación",
-    icon: "🧭",
     terms: [
       {
         term: "Puntos Cardinales",
@@ -107,7 +114,6 @@ const glossaryTerms = [
   },
   {
     category: "Interpretación de Datos",
-    icon: "📈",
     terms: [
       {
         term: "Tendencia",
@@ -135,7 +141,8 @@ export default function GlosarioPage() {
     <div className="space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
-          📚 Glosario de Términos Marítimos
+          <BookIcon size={28} className="text-primary" />
+          Glosario de Términos Marítimos
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-2">
           Definiciones y explicaciones de los términos técnicos utilizados en el sistema de monitoreo SIMAR-EPA
@@ -144,11 +151,12 @@ export default function GlosarioPage() {
 
       <div className="space-y-6 sm:space-y-8">
         {glossaryTerms.map((category) => {
+          const IconComponent = categoryIcons[category.category] || WaveIcon
           return (
             <Card key={category.category} className="bg-card">
               <CardHeader className="pb-3 sm:pb-6">
                 <CardTitle className="text-card-foreground flex items-center gap-2 text-lg sm:text-xl">
-                  <span className="text-2xl">{category.icon}</span>
+                  <IconComponent size={24} className="text-primary" />
                   {category.category}
                 </CardTitle>
               </CardHeader>

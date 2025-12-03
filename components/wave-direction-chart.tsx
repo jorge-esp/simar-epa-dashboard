@@ -94,7 +94,7 @@ export function WaveDirectionChart({ timeRange }: WaveDirectionChartProps) {
     error,
     isLoading,
   } = useSWR(["/api/buoy/wave-direction", timeRange], ([url, range]) => fetcher(url, range), {
-    refreshInterval: 120000, // Update every 2 minutes
+    refreshInterval: 600000,
   })
 
   const currentDirection = response?.currentValue?.direction

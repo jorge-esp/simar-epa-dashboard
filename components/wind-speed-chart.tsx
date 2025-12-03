@@ -1,8 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ResponsiveContainer, Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
-import { ArrowUpRight, Maximize2, Wind } from "lucide-react"
+import { ResponsiveContainer, Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -10,6 +9,7 @@ import useSWR from "swr"
 import { fetchWindSpeed } from "@/lib/api-client"
 import type { TimeRange } from "@/components/time-range-selector"
 import { formatChileDate, formatChileDateTime, formatChileTimeOnly, shouldShowDate } from "@/lib/timezone-utils"
+import { WindIcon, ExpandIcon } from "@/components/icons"
 
 interface WindSpeedChartProps {
   timeRange: TimeRange
@@ -21,12 +21,13 @@ const fetcher = async (timeRange: TimeRange) => {
   const useDate = shouldShowDate(timeRange)
 
   const chartData = response.data
-    .map((item) => {
+    .map((item: any) => {
       const timestamp = item.timestamp
       return {
         time: useDate ? formatChileDate(timestamp) : formatChileTimeOnly(timestamp),
         fullTime: formatChileDateTime(timestamp),
         velocidad: Number(item.value),
+        rafaga: item.gustValue ? Number(item.gustValue) : null,
       }
     })
     .reverse()
@@ -34,6 +35,7 @@ const fetcher = async (timeRange: TimeRange) => {
   return {
     lastUpdate: response.lastUpdate,
     data: chartData,
+    currentGustValue: response.currentGustValue,
   }
 }
 
@@ -42,7 +44,10 @@ const CustomTooltip = ({ active, payload }: any) => {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg">
         <p className="text-sm font-semibold text-gray-900">{payload[0].payload.fullTime}</p>
-        <p className="text-sm text-green-600 font-medium mt-1">Velocidad: {payload[0].value.toFixed(1)} m/s</p>
+        <p className="text-sm text-green-600 font-medium mt-1">Viento: {payload[0].value.toFixed(1)} m/s</p>
+        {payload[1]?.value && (
+          <p className="text-sm text-orange-600 font-medium">Ráfaga: {payload[1].value.toFixed(1)} m/s</p>
+        )}
       </div>
     )
   }
@@ -55,12 +60,13 @@ export function WindSpeedChart({ timeRange }: WindSpeedChartProps) {
     error,
     isLoading,
   } = useSWR(["wind-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 120000, // Cada 2 minutos
+    refreshInterval: 600000,
   })
 
   const currentValue = response?.data[response.data.length - 1]?.velocidad
+  const currentGustValue = response?.data[response.data.length - 1]?.rafaga
   const averageValue = response?.data.length
-    ? response.data.reduce((sum, item) => sum + item.velocidad, 0) / response.data.length
+    ? response.data.reduce((sum: number, item: any) => sum + item.velocidad, 0) / response.data.length
     : undefined
 
   const ChartComponent = ({ data }: { data: any[] }) => (
@@ -80,7 +86,23 @@ export function WindSpeedChart({ timeRange }: WindSpeedChartProps) {
           }}
         />
         <Tooltip content={<CustomTooltip />} />
-        <Line type="monotone" dataKey="velocidad" stroke="#10b981" strokeWidth={2} dot={false} />
+        <Legend
+          verticalAlign="top"
+          height={36}
+          formatter={(value) => <span className="text-sm">{value === "velocidad" ? "Viento" : "Ráfaga"}</span>}
+        />
+        {/* Línea de velocidad del viento */}
+        <Line type="monotone" dataKey="velocidad" name="velocidad" stroke="#10b981" strokeWidth={2} dot={false} />
+        {/* Línea de velocidad de ráfaga */}
+        <Line
+          type="monotone"
+          dataKey="rafaga"
+          name="rafaga"
+          stroke="#f97316"
+          strokeWidth={2}
+          dot={false}
+          strokeDasharray="5 5"
+        />
       </LineChart>
     </ResponsiveContainer>
   )
@@ -91,18 +113,22 @@ export function WindSpeedChart({ timeRange }: WindSpeedChartProps) {
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-card-foreground flex items-center gap-2">
-              <Wind className="h-5 w-5" />
-              Velocidad del Viento
+              <WindIcon size={20} />
+              Velocidad del Viento y Ráfagas
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">actualizado {response?.lastUpdate || "--:--"}</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex flex-col gap-1">
               <Badge variant="secondary" className="gap-1 px-3 py-1">
-                <span className="text-xs text-muted-foreground">Actual:</span>
+                <span className="text-xs text-muted-foreground">Viento:</span>
                 <span className="w-2 h-2 rounded-full bg-green-500" />
                 <span className="font-semibold">{currentValue?.toFixed(1) || "--"} m/s</span>
-                <ArrowUpRight className="w-3 h-3" />
+              </Badge>
+              <Badge variant="secondary" className="gap-1 px-3 py-1">
+                <span className="text-xs text-muted-foreground">Ráfaga:</span>
+                <span className="w-2 h-2 rounded-full bg-orange-500" />
+                <span className="font-semibold">{currentGustValue?.toFixed(1) || "--"} m/s</span>
               </Badge>
               <Badge variant="outline" className="gap-1 px-3 py-1">
                 <span className="text-xs text-muted-foreground">Promedio:</span>
@@ -112,12 +138,12 @@ export function WindSpeedChart({ timeRange }: WindSpeedChartProps) {
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="icon" className="rounded-full bg-orange-500 hover:bg-orange-600 text-white">
-                  <Maximize2 className="w-4 h-4" />
+                  <ExpandIcon size={16} />
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl">
                 <DialogHeader>
-                  <DialogTitle>Velocidad del Viento - Vista Detallada</DialogTitle>
+                  <DialogTitle>Velocidad del Viento y Ráfagas - Vista Detallada</DialogTitle>
                 </DialogHeader>
                 <div className="h-[500px]">
                   {isLoading ? (

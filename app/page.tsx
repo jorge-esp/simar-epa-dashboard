@@ -7,29 +7,19 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { BuoyStatus } from "@/components/buoy-status"
+import { WaveIcon, MapPinIcon, CalendarIcon } from "@/components/icons"
 
 export default function HomePage() {
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Sección Hero: Imagen destacada con título y descripción sobrepuesta */}
-      <div className="relative h-[300px] sm:h-[400px] md:h-[500px] rounded-lg sm:rounded-xl overflow-hidden">
-        {/* Imagen de fondo de la boya oceanográfica oficial */}
-        <img
-          src="/images/boya-arica.png"
-          alt="Boya Oceanográfica Puerto Arica"
-          className="w-full h-full object-cover"
-        />
-        {/* Gradiente oscuro en la parte inferior para mejorar legibilidad del texto */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 sm:p-6 md:p-8">
-          {/* Título principal responsive: más grande en desktop, más pequeño en móvil */}
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">
-            Sistema de Información Marítima
-          </h1>
-          {/* Subtítulo descriptivo */}
-          <p className="text-sm sm:text-base md:text-lg text-white drop-shadow-lg">
-            Monitoreo en tiempo real de condiciones oceanográficas
-          </p>
-        </div>
+      {/* Sección Hero: Encabezado simple */}
+      <div className="text-center py-6 sm:py-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
+          Sistema de Información Marítima
+        </h1>
+        <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+          Monitoreo en tiempo real de condiciones oceanográficas
+        </p>
       </div>
 
       {/* Componente de estado de la boya: muestra ubicación GPS, estado operacional y última actualización */}
@@ -42,9 +32,8 @@ export default function HomePage() {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start gap-3 sm:gap-4">
-              {/* Ícono con fondo de color suave */}
               <div className="p-2 sm:p-3 bg-cyan-500/10 rounded-lg flex-shrink-0">
-                <span className="text-2xl sm:text-3xl">🌊</span>
+                <WaveIcon size={24} className="text-cyan-500" />
               </div>
               <div>
                 <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base">Monitoreo Continuo</h3>
@@ -61,7 +50,7 @@ export default function HomePage() {
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start gap-3 sm:gap-4">
               <div className="p-2 sm:p-3 bg-blue-500/10 rounded-lg flex-shrink-0">
-                <span className="text-2xl sm:text-3xl">📍</span>
+                <MapPinIcon size={24} className="text-blue-500" />
               </div>
               <div>
                 <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base">Ubicación Estratégica</h3>
@@ -78,7 +67,7 @@ export default function HomePage() {
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start gap-3 sm:gap-4">
               <div className="p-2 sm:p-3 bg-orange-500/10 rounded-lg flex-shrink-0">
-                <span className="text-2xl sm:text-3xl">📅</span>
+                <CalendarIcon size={24} className="text-orange-500" />
               </div>
               <div>
                 <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base">Histórico de Datos</h3>
@@ -141,7 +130,7 @@ export default function HomePage() {
         {/* Estadística 3: Frecuencia de actualización */}
         <Card>
           <CardContent className="p-4 sm:p-6 text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-orange-500 mb-1">2min</div>
+            <div className="text-2xl sm:text-3xl font-bold text-orange-500 mb-1">10min</div>
             <div className="text-xs sm:text-sm text-muted-foreground">Actualización</div>
           </CardContent>
         </Card>

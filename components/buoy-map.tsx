@@ -6,7 +6,7 @@
  */
 "use client"
 
-import { MapPin } from 'lucide-react'
+import { MapPinIcon } from "@/components/icons"
 
 // Definir props del componente
 interface BuoyMapProps {
@@ -65,7 +65,7 @@ export default function BuoyMap({ latitude, longitude, distance }: BuoyMapProps)
         {/* Badge flotante con identificación de la boya */}
         <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border border-border">
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-primary" />
+            <MapPinIcon size={16} className="text-primary" />
             <div>
               <p className="text-xs font-semibold text-foreground">Boya Arica</p>
               <p className="text-xs text-muted-foreground">Puerto Arica, Chile</p>
@@ -87,8 +87,9 @@ export default function BuoyMap({ latitude, longitude, distance }: BuoyMapProps)
       </div>
 
       {/* Nota informativa sobre el mapa */}
-      <p className="text-xs text-muted-foreground text-center">
-        📍 Mapa proporcionado por OpenStreetMap • Ubicación actualizada en tiempo real
+      <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
+        <MapPinIcon size={12} />
+        Mapa proporcionado por OpenStreetMap • Ubicación actualizada en tiempo real
       </p>
     </div>
   )

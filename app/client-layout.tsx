@@ -23,18 +23,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   // Estado para controlar apertura/cierre del sidebar en móvil
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
+  const closeSidebar = () => setSidebarOpen(false)
+
   return (
     <div className="flex h-screen overflow-hidden">
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={closeSidebar} aria-hidden="true" />
       )}
 
       {/* Sidebar de navegación */}
-      <Sidebar isOpen={sidebarOpen} />
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       {/* Contenedor principal con flex para empujar footer al fondo */}
       <div className="flex-1 flex flex-col overflow-hidden">

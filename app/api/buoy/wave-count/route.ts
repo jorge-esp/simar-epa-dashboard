@@ -1,14 +1,28 @@
 import { NextResponse } from "next/server"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const apiUrl =
-      "https://oceancom.msm-data.com/api/device/10/Waves/Wave%20Count/?token=91b448bbb9d19b6c651e8f4832fcb6c9"
+    const { searchParams } = new URL(request.url)
+    const hours = Number.parseInt(searchParams.get("hours") || "24")
+
+    // Calcular fechas para el rango de tiempo
+    const endDate = new Date()
+    const startDate = new Date(endDate.getTime() - hours * 60 * 60 * 1000)
+
+    // Formatear fechas para la API (YYYY-MM-DD HH:mm:ss)
+    const formatDate = (date: Date) => {
+      return date.toISOString().slice(0, 19).replace("T", " ")
+    }
+
+    const startStr = formatDate(startDate)
+    const endStr = formatDate(endDate)
+
+    const apiUrl = `https://oceancom.msm-data.com/api/device/10/Waves/Wave%20Count/${startStr}/${endStr}?token=91b448bbb9d19b6c651e8f4832fcb6c9`
 
     console.log("[v0] Fetching wave count data from:", apiUrl)
 
     const response = await fetch(apiUrl, {
-      next: { revalidate: 300 }, // Cache for 5 minutes
+      next: { revalidate: 300 }, // Cache de 5 minutos
     })
 
     if (!response.ok) {

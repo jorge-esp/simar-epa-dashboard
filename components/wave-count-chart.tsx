@@ -55,7 +55,7 @@ export function WaveCountChart({ timeRange }: WaveCountChartProps) {
     error,
     isLoading,
   } = useSWR(["wave-count-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 120000, // Update every 2 minutes (120 seconds)
+    refreshInterval: 600000,
   })
 
   const currentValue = response?.data[response.data.length - 1]?.cantidad

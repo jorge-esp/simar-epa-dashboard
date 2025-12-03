@@ -7,13 +7,14 @@ import { useState } from "react"
 import useSWR from "swr"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { InfoIcon } from "@/components/icons"
 
 export default function WaveDirectionPage() {
   // Estado para el rango de tiempo seleccionado (12h, 24h, 48h, 7d)
   const [timeRange, setTimeRange] = useState<TimeRange>("24h")
 
   // Hook SWR para obtener datos de dirección de olas en tiempo real
-  // Se actualiza automáticamente cada 2 minutos (120000ms)
+  // Se actualiza automáticamente cada 10 minutos (600000ms)
   const { data: currentData } = useSWR(
     "/api/buoy/wave-direction?range=24h",
     async (url) => {
@@ -21,7 +22,7 @@ export default function WaveDirectionPage() {
       if (!response.ok) return null
       return response.json()
     },
-    { refreshInterval: 120000 },
+    { refreshInterval: 600000 },
   )
 
   // Extraer dirección y dispersión actuales de los datos
@@ -48,7 +49,7 @@ export default function WaveDirectionPage() {
       <Card className="bg-card border-l-4 border-l-orange-500">
         <CardHeader className="pb-3">
           <CardTitle className="text-card-foreground flex items-center gap-2 text-base sm:text-lg">
-            <span className="text-orange-500">ℹ️</span>
+            <InfoIcon size={18} className="text-orange-500" />
             Cómo Interpretar la Dirección y Dispersión de Olas
           </CardTitle>
         </CardHeader>
@@ -108,7 +109,6 @@ export default function WaveDirectionPage() {
       </div>
 
       <Alert variant="destructive">
-        <span>⚠️</span>
         <AlertTitle className="text-sm sm:text-base">Consejos de Seguridad</AlertTitle>
         <AlertDescription className="space-y-2 text-xs sm:text-sm">
           <ul className="list-disc list-inside space-y-1">

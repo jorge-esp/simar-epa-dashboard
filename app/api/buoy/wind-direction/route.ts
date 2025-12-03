@@ -1,14 +1,12 @@
 /**
- * API ROUTE: Dirección del Viento
+ * API ROUTE: Dirección del Viento y Ráfagas
  *
- * Este endpoint obtiene la dirección del viento desde la boya usando WDIR.
- * Retorna el valor más reciente de dirección en grados (0-360°)
- *
- * Parámetro WDIR: Dirección del viento en grados
- * - 0° = Norte
- * - 90° = Este
- * - 180° = Sur
- * - 270° = Oeste
+ * Este endpoint obtiene la dirección del viento y ráfagas desde la boya.
+ * Parámetros:
+ * - WDIR: Dirección del viento en grados (0-360°)
+ * - WSPD: Velocidad del viento en m/s
+ * - GDIR: Dirección de la ráfaga en grados (0-360°)
+ * - GSPD: Velocidad de la ráfaga en m/s
  */
 
 import { NextResponse } from "next/server"
@@ -19,8 +17,8 @@ const DEVICE_ID = "10"
 const TOKEN = "91b448bbb9d19b6c651e8f4832fcb6c9"
 
 /**
- * Manejador GET para obtener la dirección actual del viento
- * @returns {JSON} Dirección del viento en grados y velocidad asociada
+ * Manejador GET para obtener la dirección y velocidad del viento y ráfagas
+ * @returns {JSON} Dirección y velocidad del viento, más dirección y velocidad de ráfaga
  */
 export async function GET() {
   try {
@@ -30,53 +28,76 @@ export async function GET() {
 
     const formatDate = (date: Date) => date.toISOString().replace("T", " ").substring(0, 19)
 
-    // Construir URL para obtener dirección del viento (WDIR) y velocidad (WSPD)
-    const windDirUrl = `${API_BASE}/${DEVICE_ID}/EMA/Angular/${formatDate(oneHourAgo)}/${formatDate(now)}?token=${TOKEN}`
+    // Construir URLs para obtener todos los datos
+    // Angular contiene WDIR (dirección viento) y GDIR (dirección ráfaga)
+    const angularUrl = `${API_BASE}/${DEVICE_ID}/EMA/Angular/${formatDate(oneHourAgo)}/${formatDate(now)}?token=${TOKEN}`
+    // Wind Speed contiene WSPD (velocidad viento)
     const windSpeedUrl = `${API_BASE}/${DEVICE_ID}/EMA/Wind%20Speed/${formatDate(oneHourAgo)}/${formatDate(now)}?token=${TOKEN}`
+    // Wind Gust contiene GSPD (velocidad ráfaga)
+    const gustSpeedUrl = `${API_BASE}/${DEVICE_ID}/EMA/Wind%20Gust/${formatDate(oneHourAgo)}/${formatDate(now)}?token=${TOKEN}`
 
-    console.log("[v0] Fetching wind direction from:", windDirUrl)
+    console.log("[v0] Fetching wind data from Angular, Wind Speed, and Wind Gust APIs")
 
     // Realizar peticiones en paralelo
-    const [dirResponse, speedResponse] = await Promise.all([
-      fetch(windDirUrl, { headers: { Accept: "application/json" } }),
+    const [angularResponse, speedResponse, gustResponse] = await Promise.all([
+      fetch(angularUrl, { headers: { Accept: "application/json" } }),
       fetch(windSpeedUrl, { headers: { Accept: "application/json" } }),
+      fetch(gustSpeedUrl, { headers: { Accept: "application/json" } }),
     ])
 
-    if (!dirResponse.ok) {
-      throw new Error(`API error for direction: ${dirResponse.status}`)
+    // Valores por defecto
+    let windDirection = 0
+    let windSpeed = 0
+    let gustDirection = 0
+    let gustSpeed = 0
+
+    // Procesar datos de Angular (WDIR y GDIR)
+    if (angularResponse.ok) {
+      const angularData = await angularResponse.json()
+
+      // Obtener WDIR (dirección del viento)
+      const wdirValues = angularData?.data?.EMA?.[0]?.["Angular"]?.WDIR?.values
+      if (wdirValues) {
+        const valuesArray = Object.values(wdirValues) as Array<{ date: string; value: string }>
+        windDirection = valuesArray.length > 0 ? Number.parseFloat(valuesArray[valuesArray.length - 1].value) : 0
+      }
+
+      // Obtener GDIR (dirección de la ráfaga)
+      const gdirValues = angularData?.data?.EMA?.[0]?.["Angular"]?.GDIR?.values
+      if (gdirValues) {
+        const valuesArray = Object.values(gdirValues) as Array<{ date: string; value: string }>
+        gustDirection = valuesArray.length > 0 ? Number.parseFloat(valuesArray[valuesArray.length - 1].value) : 0
+      }
     }
 
-    const dirData = await dirResponse.json()
-
-    // Navegar por la estructura de la respuesta para obtener WDIR
-    // Estructura: data.EMA.0["Angular"].WDIR.values
-    const wdirValues = dirData?.data?.EMA?.[0]?.["Angular"]?.WDIR?.values
-
-    if (!wdirValues) {
-      console.log("[v0] No WDIR data found")
-      return NextResponse.json({ direction: 0, speed: 0 })
-    }
-
-    // Obtener el valor más reciente
-    const valuesArray = Object.values(wdirValues) as Array<{ date: string; value: string }>
-    const latestDirection = valuesArray.length > 0 ? Number.parseFloat(valuesArray[valuesArray.length - 1].value) : 0
-
-    // Intentar obtener velocidad del viento también
-    let latestSpeed = 0
+    // Procesar velocidad del viento (WSPD)
     if (speedResponse.ok) {
       const speedData = await speedResponse.json()
       const wspdValues = speedData?.data?.EMA?.[0]?.["Wind Speed"]?.WSPD?.values
       if (wspdValues) {
         const speedArray = Object.values(wspdValues) as Array<{ date: string; value: string }>
-        latestSpeed = speedArray.length > 0 ? Number.parseFloat(speedArray[speedArray.length - 1].value) : 0
+        windSpeed = speedArray.length > 0 ? Number.parseFloat(speedArray[speedArray.length - 1].value) : 0
       }
     }
 
-    console.log("[v0] Wind direction:", latestDirection, "Speed:", latestSpeed)
+    // Procesar velocidad de ráfaga (GSPD)
+    if (gustResponse.ok) {
+      const gustData = await gustResponse.json()
+      const gspdValues = gustData?.data?.EMA?.[0]?.["Wind Gust"]?.GSPD?.values
+      if (gspdValues) {
+        const gustArray = Object.values(gspdValues) as Array<{ date: string; value: string }>
+        gustSpeed = gustArray.length > 0 ? Number.parseFloat(gustArray[gustArray.length - 1].value) : 0
+      }
+    }
+
+    console.log("[v0] Wind direction:", windDirection, "Speed:", windSpeed)
+    console.log("[v0] Gust direction:", gustDirection, "Speed:", gustSpeed)
 
     return NextResponse.json({
-      direction: latestDirection,
-      speed: latestSpeed,
+      direction: windDirection,
+      speed: windSpeed,
+      gustDirection: gustDirection,
+      gustSpeed: gustSpeed,
     })
   } catch (error) {
     console.error("[v0] Error fetching wind direction:", error)

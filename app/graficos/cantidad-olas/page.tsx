@@ -21,7 +21,6 @@ export default function WaveCountPage() {
       <WaveCountChart timeRange={timeRange} />
 
       <Alert variant="destructive">
-        <span>⚠️</span>
         <AlertTitle className="text-sm sm:text-base">Consejos de Seguridad</AlertTitle>
         <AlertDescription className="space-y-2 text-xs sm:text-sm">
           <ul className="list-disc list-inside space-y-1">

@@ -2,13 +2,14 @@
  * Componente BuoyStatus
  * Muestra el estado operacional de la boya oceanográfica en tiempo real
  * Incluye: estado operativo, ubicación GPS, última actualización y distancia del ancla
- * Los datos se actualizan automáticamente cada 2 minutos usando useState y useEffect
+ * Los datos se actualizan automáticamente cada 10 minutos usando useState y useEffect
  */
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState, useRef } from "react"
+import { MapPinIcon, SignalIcon, AnchorIcon, AlertTriangleIcon, WaveIcon } from "@/components/icons"
 
 export function BuoyStatus() {
   // Hook useState para manejar el estado manualmente
@@ -99,8 +100,8 @@ export function BuoyStatus() {
     // Llamada inicial
     fetchStatus()
 
-    // Actualización automática cada 2 minutos (120000ms)
-    const interval = setInterval(fetchStatus, 120000)
+    // Actualización automática cada 10 minutos (600000ms)
+    const interval = setInterval(fetchStatus, 600000)
 
     // Limpiar intervalo al desmontar el componente
     return () => clearInterval(interval)
@@ -174,19 +175,19 @@ export function BuoyStatus() {
             {hasAlarms ? (
               // Estado de alerta: muestra triángulo de advertencia
               <>
-                <span className="mr-1">⚠️</span>
+                <AlertTriangleIcon size={14} className="mr-1" />
                 Alerta
               </>
             ) : isOperational ? (
               // Estado operativo normal
               <>
-                <span className="mr-1">📡</span>
+                <SignalIcon size={14} className="mr-1" />
                 Operativa
               </>
             ) : (
               // Estado de carga inicial
               <>
-                <span className="mr-1">📡</span>
+                <SignalIcon size={14} className="mr-1" />
                 Cargando...
               </>
             )}
@@ -199,7 +200,7 @@ export function BuoyStatus() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {/* Información 1: Ubicación GPS de la boya */}
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">📍</span>
+            <MapPinIcon size={16} className="text-muted-foreground" />
             <div className="min-w-0">
               <p className="text-xs text-muted-foreground">Ubicación GPS</p>
               {/* Coordenadas formateadas con truncate para evitar overflow */}
@@ -211,17 +212,17 @@ export function BuoyStatus() {
 
           {/* Información 2: Hora de última actualización */}
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">📡</span>
+            <SignalIcon size={16} className="text-muted-foreground" />
             <div>
               <p className="text-xs text-muted-foreground">Última actualización</p>
-              {/* Muestra hora actual (datos se actualizan cada 2 min) */}
+              {/* Muestra hora actual (datos se actualizan cada 10 min) */}
               <p className="text-xs sm:text-sm font-medium text-foreground">{getCurrentTime()}</p>
             </div>
           </div>
 
           {/* Información 3: Distancia desde el punto de anclaje */}
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">⚓</span>
+            <AnchorIcon size={16} className="text-muted-foreground" />
             <div>
               <p className="text-xs text-muted-foreground">Distancia del Ancla</p>
               {/* Distancia en metros (indica deriva de la boya) */}
@@ -236,7 +237,7 @@ export function BuoyStatus() {
           <div className="mt-4 sm:mt-6">
             {/* Título de la sección del mapa */}
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-primary">📍</span>
+              <MapPinIcon size={16} className="text-primary" />
               <h3 className="text-sm font-semibold text-foreground">Ubicación Geográfica</h3>
             </div>
 
@@ -278,19 +279,23 @@ export function BuoyStatus() {
 
             {/* Información adicional debajo del mapa */}
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-              <span>
-                📍 Distancia del ancla: <strong className="text-foreground">{status.distance?.toFixed(0)} m</strong>
+              <span className="flex items-center gap-1">
+                <MapPinIcon size={12} />
+                Distancia del ancla: <strong className="text-foreground">{status.distance?.toFixed(0)} m</strong>
               </span>
               <span className="hidden sm:inline">•</span>
-              <span>🌊 Frente a la costa de Arica, Chile</span>
+              <span className="flex items-center gap-1">
+                <WaveIcon size={12} />
+                Frente a la costa de Arica, Chile
+              </span>
               <span className="hidden sm:inline">•</span>
               {isGpsStable ? (
                 <span className="text-xs italic text-green-600 flex items-center gap-1">
-                  <span>📡</span> Señal GPS estable
+                  <SignalIcon size={12} /> Señal GPS estable
                 </span>
               ) : (
                 <span className="text-xs italic text-amber-600 flex items-center gap-1">
-                  <span>⚠️</span> Señal GPS inestable (mostrando ubicación nominal)
+                  <AlertTriangleIcon size={12} /> Señal GPS inestable (mostrando ubicación nominal)
                 </span>
               )}
             </div>

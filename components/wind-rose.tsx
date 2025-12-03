@@ -3,6 +3,7 @@
  * Visualiza de forma gráfica e interactiva la dirección del viento o las olas
  * Incluye:
  * - Rosa de los vientos animada con flecha direccional
+ * - Opcionalmente una segunda flecha para dirección de ráfaga
  * - Puntos cardinales (N, S, E, O)
  * - Conversión a dirección cardinal (N, NE, E, SE, etc.)
  * - Animación suave de rotación cuando cambia la dirección
@@ -11,9 +12,10 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CompassIcon } from "@/components/icons"
 
 interface WindRoseProps {
-  direction: number // Dirección en grados (0-360°): 0° = Norte, 90° = Este, 180° = Sur, 270° = Oeste
+  direction: number // Dirección principal en grados (0-360°): 0° = Norte, 90° = Este, 180° = Sur, 270° = Oeste
   speed?: number // Velocidad opcional para mostrar (m/s o nudos)
   label?: string // Etiqueta personalizada para el título
   size?: "sm" | "md" | "lg" // Tamaño del componente
@@ -102,8 +104,10 @@ export function WindRose({ direction, speed, label = "Dirección", size = "md" }
   return (
     <Card className="bg-card">
       <CardHeader>
-        {/* Título con emoji de brújula */}
-        <CardTitle className="text-card-foreground flex items-center gap-2 text-base sm:text-lg">🧭 {label}</CardTitle>
+        <CardTitle className="text-card-foreground flex items-center gap-2 text-base sm:text-lg">
+          <CompassIcon size={20} className="text-primary" />
+          {label}
+        </CardTitle>
       </CardHeader>
 
       <CardContent className="flex flex-col items-center gap-3 sm:gap-4">
@@ -145,7 +149,7 @@ export function WindRose({ direction, speed, label = "Dirección", size = "md" }
               <div className="absolute w-full h-0.5 bg-primary/10 -rotate-45" />
             </div>
 
-            {/* Flecha indicadora animada que rota según la dirección */}
+            {/* Flecha principal (viento sostenido) */}
             <div
               className="absolute inset-0 flex items-center justify-center transition-transform duration-1000 ease-out"
               style={{ transform: `rotate(${rotation}deg)` }}
@@ -155,33 +159,26 @@ export function WindRose({ direction, speed, label = "Dirección", size = "md" }
                 <svg viewBox="0 0 24 24" fill="none" className="w-full h-full drop-shadow-lg">
                   {/* Sombra de la flecha para efecto 3D */}
                   <path d="M12 2L16 10H8L12 2Z" fill="rgba(0,0,0,0.2)" transform="translate(0.5, 0.5)" />
-                  {/* Punta de la flecha (triángulo superior) con gradiente naranja */}
-                  <path
-                    d="M12 2L16 10H8L12 2Z"
-                    fill="url(#arrowGradient)"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                    className="text-orange-600"
-                  />
+                  {/* Punta de la flecha (triángulo superior) con gradiente verde */}
+                  <path d="M12 2L16 10H8L12 2Z" fill="url(#arrowGradient)" stroke="#16a34a" strokeWidth="1.5" />
                   {/* Cola de la flecha (forma de V invertida) */}
                   <path
                     d="M12 10L10 22L12 20L14 22L12 10Z"
                     fill="url(#tailGradient)"
-                    stroke="currentColor"
+                    stroke="#22c55e"
                     strokeWidth="1"
-                    className="text-orange-400"
                   />
                   {/* Definición de gradientes SVG */}
                   <defs>
-                    {/* Gradiente de la punta: naranja oscuro a naranja claro */}
+                    {/* Gradiente de la punta: verde oscuro a verde claro */}
                     <linearGradient id="arrowGradient" x1="12" y1="2" x2="12" y2="10">
-                      <stop offset="0%" stopColor="#ea580c" />
-                      <stop offset="100%" stopColor="#fb923c" />
+                      <stop offset="0%" stopColor="#16a34a" />
+                      <stop offset="100%" stopColor="#22c55e" />
                     </linearGradient>
-                    {/* Gradiente de la cola: naranja claro a muy claro */}
+                    {/* Gradiente de la cola: verde claro a muy claro */}
                     <linearGradient id="tailGradient" x1="12" y1="10" x2="12" y2="22">
-                      <stop offset="0%" stopColor="#fb923c" />
-                      <stop offset="100%" stopColor="#fdba74" />
+                      <stop offset="0%" stopColor="#22c55e" />
+                      <stop offset="100%" stopColor="#86efac" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -190,7 +187,7 @@ export function WindRose({ direction, speed, label = "Dirección", size = "md" }
 
             {/* Punto central decorativo */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-orange-500 border-2 border-white shadow-lg" />
+              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-primary border-2 border-white shadow-lg" />
             </div>
           </div>
         </div>

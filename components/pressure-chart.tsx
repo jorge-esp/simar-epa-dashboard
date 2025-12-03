@@ -55,7 +55,7 @@ export function PressureChart({ timeRange }: PressureChartProps) {
     error,
     isLoading,
   } = useSWR(["pressure-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 120000, // Actualizacion cada 2 minutos (120000 milisegundos)
+    refreshInterval: 600000,
   })
 
   const currentValue = response?.data[response.data.length - 1]?.presion

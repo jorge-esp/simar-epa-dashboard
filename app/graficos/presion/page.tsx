@@ -5,6 +5,7 @@ import { TimeRangeSelector, type TimeRange } from "@/components/time-range-selec
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { InfoIcon } from "@/components/icons"
 
 export default function PressurePage() {
   const [timeRange, setTimeRange] = useState<TimeRange>("24h")
@@ -29,7 +30,7 @@ export default function PressurePage() {
       <Card className="bg-card border-l-4 border-l-purple-500">
         <CardHeader className="pb-3">
           <CardTitle className="text-card-foreground flex items-center gap-2 text-base sm:text-lg">
-            <span className="text-purple-500">ℹ️</span>
+            <InfoIcon size={18} className="text-purple-500" />
             Cómo Interpretar la Presión Atmosférica
           </CardTitle>
         </CardHeader>
@@ -67,7 +68,6 @@ export default function PressurePage() {
       <PressureChart timeRange={timeRange} />
 
       <Alert variant="destructive">
-        <span>⚠️</span>
         <AlertTitle className="text-sm sm:text-base">Consejos de Seguridad</AlertTitle>
         <AlertDescription className="space-y-2 text-xs sm:text-sm">
           <ul className="list-disc list-inside space-y-1">

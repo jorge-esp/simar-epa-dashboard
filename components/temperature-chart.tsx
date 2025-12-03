@@ -55,7 +55,7 @@ export function TemperatureChart({ timeRange }: TemperatureChartProps) {
     error,
     isLoading,
   } = useSWR(["temp-data", timeRange], () => fetcher(timeRange), {
-    refreshInterval: 120000, // Actualizacion cada 2 minutos (120 segundos)
+    refreshInterval: 600000,
   })
 
   const currentValue = response?.data[response.data.length - 1]?.temperatura
