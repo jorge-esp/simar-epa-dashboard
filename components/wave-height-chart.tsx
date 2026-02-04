@@ -1,3 +1,21 @@
+/**
+ * COMPONENTE: WaveHeightChart (Gráfico de Altura de Olas)
+ * 
+ * Visualiza la altura significativa de olas (H1/3) en un gráfico temporal.
+ * 
+ * FLUJO DE DATOS:
+ * 1. El componente solicita datos a /api/buoy/wave-height
+ * 2. La API interna hace fetch a Oceancom: device/10/Waves/Wave%20Height
+ * 3. Oceancom retorna datos de VAVH (altura significativa) en centímetros
+ * 4. La API convierte cm → metros y retorna array de {timestamp, value}
+ * 5. Este componente formatea fechas a zona horaria Chile (UTC-3)
+ * 6. Recharts renderiza el gráfico con línea cyan y umbral rojo en 1.75m
+ * 
+ * PROPS:
+ * - timeRange: "12h" | "24h" - Rango de tiempo a mostrar
+ * 
+ * ACTUALIZACIÓN: Cada 10 minutos (600000ms) via SWR refreshInterval
+ */
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

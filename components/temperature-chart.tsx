@@ -1,3 +1,22 @@
+/**
+ * COMPONENTE: TemperatureChart (Gráfico de Temperatura del Aire)
+ * 
+ * Visualiza la temperatura del aire (dry temperature) en un gráfico temporal.
+ * 
+ * FLUJO DE DATOS:
+ * 1. El componente solicita datos a /api/buoy/temperature
+ * 2. La API interna hace fetch a Oceancom: device/10/EMA/Temperature
+ * 3. Oceancom retorna datos de DRYT (dry temperature) en grados Celsius
+ * 4. La API retorna array de {timestamp, value}
+ * 5. Este componente formatea fechas a zona horaria Chile (UTC-3)
+ * 6. Recharts renderiza el gráfico con línea naranja
+ * 
+ * PROPS:
+ * - timeRange: "12h" | "24h" | "48h" | "7d" - Rango de tiempo a mostrar
+ * 
+ * UNIDADES: °C (grados Celsius)
+ * ACTUALIZACIÓN: Cada 10 minutos (600000ms) via SWR refreshInterval
+ */
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
