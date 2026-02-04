@@ -1,3 +1,27 @@
+/**
+ * COMPONENTE: WaveDirectionChart (Gráfico de Dirección de Olas)
+ * 
+ * Visualiza la dirección media de las olas y su dispersión angular.
+ * 
+ * FLUJO DE DATOS:
+ * 1. El componente solicita datos a /api/buoy/wave-direction
+ * 2. La API interna hace fetch a Oceancom: device/10/Waves/Angular
+ * 3. Oceancom retorna datos de:
+ *    - VDIR: Dirección media de olas (grados 0-360°)
+ *    - VPSP: Dispersión angular (grados)
+ * 4. La API retorna array de {timestamp, direction, spread}
+ * 5. Este componente convierte grados a direcciones cardinales (N, NE, E, etc.)
+ * 6. Recharts renderiza gráfico con 2 líneas: azul (dirección) y naranja (dispersión)
+ * 
+ * DIRECCIONES CARDINALES:
+ * - 0° = Norte, 90° = Este, 180° = Sur, 270° = Oeste
+ * 
+ * PROPS:
+ * - timeRange: "12h" | "24h" | "48h" | "7d" - Rango de tiempo a mostrar
+ * 
+ * UNIDADES: Grados (°)
+ * ACTUALIZACIÓN: Cada 10 minutos (600000ms) via SWR refreshInterval
+ */
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

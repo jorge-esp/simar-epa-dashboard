@@ -1,3 +1,26 @@
+/**
+ * COMPONENTE: WaveCountChart (Gráfico de Cantidad de Olas)
+ * 
+ * Visualiza la cantidad/frecuencia de olas registradas por período de medición.
+ * 
+ * FLUJO DE DATOS:
+ * 1. El componente solicita datos a /api/buoy/wave-count
+ * 2. La API interna hace fetch a Oceancom: device/10/Waves/Wave%20Count
+ * 3. Oceancom retorna datos de VQTY (cantidad de olas)
+ * 4. La API retorna array de {timestamp, value}
+ * 5. Este componente formatea fechas a zona horaria Chile (UTC-3)
+ * 6. Recharts renderiza el gráfico con línea púrpura
+ * 
+ * DESCRIPCIÓN:
+ * La boya cuenta el número de olas que pasan en intervalos regulares,
+ * útil para analizar la frecuencia y actividad del oleaje.
+ * 
+ * PROPS:
+ * - timeRange: "12h" | "24h" - Rango de tiempo a mostrar
+ * 
+ * UNIDADES: Número de olas (sin unidad)
+ * ACTUALIZACIÓN: Cada 10 minutos (600000ms) via SWR refreshInterval
+ */
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

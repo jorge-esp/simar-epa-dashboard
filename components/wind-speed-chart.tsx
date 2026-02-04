@@ -1,3 +1,23 @@
+/**
+ * COMPONENTE: WindSpeedChart (Gráfico de Velocidad del Viento)
+ * 
+ * Visualiza la velocidad del viento sostenido y ráfagas en un gráfico temporal.
+ * 
+ * FLUJO DE DATOS:
+ * 1. El componente solicita datos a /api/buoy/wind-speed
+ * 2. La API interna hace fetch en paralelo a Oceancom:
+ *    - device/10/EMA/Wind%20Speed (WSPD - viento sostenido)
+ *    - device/10/EMA/Wind%20Gust (GSPD - ráfagas)
+ * 3. La API retorna array de {timestamp, value, gustValue}
+ * 4. Este componente formatea fechas a zona horaria Chile (UTC-3)
+ * 5. Recharts renderiza gráfico con 2 líneas: verde (viento) y naranja (ráfaga)
+ * 
+ * PROPS:
+ * - timeRange: "12h" | "24h" - Rango de tiempo a mostrar
+ * 
+ * UNIDADES: m/s (metros por segundo)
+ * ACTUALIZACIÓN: Cada 10 minutos (600000ms) via SWR refreshInterval
+ */
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

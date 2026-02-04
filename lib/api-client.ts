@@ -1,8 +1,36 @@
 /**
- * Cliente API para consumir endpoints locales de la boya
+ * MÓDULO: api-client.ts - Cliente API para datos de la Boya Oceanográfica
  *
- * Este módulo centraliza todas las llamadas a las APIs locales
- * que a su vez consumen datos de la boya oceanográfica.
+ * Este módulo centraliza todas las llamadas a las APIs locales de Next.js
+ * que a su vez consumen datos de la boya oceanográfica desde Oceancom.
+ *
+ * ARQUITECTURA DE CONEXIÓN:
+ * ┌─────────────┐     ┌──────────────────┐     ┌─────────────────────────────────┐
+ * │ Componente  │────▶│ api-client.ts    │────▶│ /api/buoy/* (Next.js Routes)    │
+ * │ React       │     │ (este archivo)   │     │                                 │
+ * └─────────────┘     └──────────────────┘     └─────────────────────────────────┘
+ *                                                          │
+ *                                                          ▼
+ *                                               ┌─────────────────────────────────┐
+ *                                               │ API Externa Oceancom            │
+ *                                               │ https://oceancom.msm-data.com   │
+ *                                               │ Token: 91b448bbb9d19b6c651e...  │
+ *                                               │ Device ID: 10 (Boya Arica)      │
+ *                                               └─────────────────────────────────┘
+ *
+ * ENDPOINTS DISPONIBLES:
+ * - wave-height: Altura significativa H1/3 (metros)
+ * - wave-direction: Dirección y dispersión de olas (grados)
+ * - wave-count: Cantidad de olas (número)
+ * - wind-speed: Velocidad del viento y ráfagas (m/s)
+ * - temperature: Temperatura del aire (°C)
+ * - pressure: Presión atmosférica (hPa)
+ *
+ * PARÁMETROS DE TIEMPO:
+ * - "12h": Últimas 12 horas
+ * - "24h": Últimas 24 horas (default)
+ * - "48h": Últimas 48 horas
+ * - "7d": Últimos 7 días
  */
 
 // Interfaces TypeScript para tipar las respuestas

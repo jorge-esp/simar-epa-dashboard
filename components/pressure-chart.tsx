@@ -1,3 +1,25 @@
+/**
+ * COMPONENTE: PressureChart (Gráfico de Presión Atmosférica)
+ * 
+ * Visualiza la presión atmosférica (barometric pressure) en un gráfico temporal.
+ * 
+ * FLUJO DE DATOS:
+ * 1. El componente solicita datos a /api/buoy/pressure
+ * 2. La API interna hace fetch a Oceancom: device/10/EMA/Atmospheric%20Pressure
+ * 3. Oceancom retorna datos de ATMS (atmospheric pressure) en hPa
+ * 4. La API retorna array de {timestamp, value}
+ * 5. Este componente formatea fechas a zona horaria Chile (UTC-3)
+ * 6. Recharts renderiza el gráfico con línea púrpura y escala ajustada
+ * 
+ * NOTA: El eje Y se ajusta dinámicamente para mostrar variaciones pequeñas
+ * ya que la presión atmosférica varía poco (típicamente 1000-1030 hPa)
+ * 
+ * PROPS:
+ * - timeRange: "12h" | "24h" | "48h" | "7d" - Rango de tiempo a mostrar
+ * 
+ * UNIDADES: hPa (hectopascales)
+ * ACTUALIZACIÓN: Cada 10 minutos (600000ms) via SWR refreshInterval
+ */
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
