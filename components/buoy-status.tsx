@@ -18,6 +18,22 @@ export function BuoyStatus() {
   const [showMap, setShowMap] = useState(false)
   const [mapCoordinates, setMapCoordinates] = useState<{ lat: number; lon: number } | null>(null)
   const [isGpsStable, setIsGpsStable] = useState(true) // Nuevo estado para indicar estabilidad GPS
+  const [currentTime, setCurrentTime] = useState<string | null>(null)
+
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      setCurrentTime(
+        new Date().toLocaleTimeString("es-CL", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      )
+    }
+
+    updateCurrentTime()
+    const interval = window.setInterval(updateCurrentTime, 60_000)
+    return () => window.clearInterval(interval)
+  }, [])
 
   // Referencia para guardar la última posición del mapa y evitar dependencias circulares en useEffect
   const lastMapPosRef = useRef<{ lat: number; lon: number } | null>(null)
@@ -216,7 +232,7 @@ export function BuoyStatus() {
             <div>
               <p className="text-xs text-muted-foreground">Última actualización</p>
               {/* Muestra hora actual (datos se actualizan cada 10 min) */}
-              <p className="text-xs sm:text-sm font-medium text-foreground">{getCurrentTime()}</p>
+              <p className="text-xs sm:text-sm font-medium text-foreground">{currentTime ?? "—"}</p>
             </div>
           </div>
 

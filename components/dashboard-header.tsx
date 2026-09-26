@@ -12,6 +12,7 @@
  */
 "use client"
 
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 
 interface DashboardHeaderProps {
@@ -20,6 +21,18 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ sidebarOpen, onToggleSidebar }: DashboardHeaderProps) {
+  const [currentTime, setCurrentTime] = useState<string | null>(null)
+
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString("es-CL"))
+    }
+
+    updateCurrentTime()
+    const interval = window.setInterval(updateCurrentTime, 1_000)
+    return () => window.clearInterval(interval)
+  }, [])
+
   return (
     // - sticky: Posicionamiento sticky que se "pega" al top cuando haces scroll
     // - top-0: Se posiciona a 0px desde el top (pegado arriba)
@@ -74,7 +87,7 @@ export function DashboardHeader({ sidebarOpen, onToggleSidebar }: DashboardHeade
             </p>
             {/* Hora actual formateada para zona horaria de Chile */}
             <p className="text-[10px] md:text-xs text-blue-100 leading-tight whitespace-nowrap">
-              {new Date().toLocaleTimeString("es-CL")}
+              {currentTime ?? "—"}
             </p>
           </div>
         </div>
